@@ -1,0 +1,170 @@
+import 'dart:async';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:barcode_scan_fix/barcode_scan.dart';
+
+class ScannerHome extends StatefulWidget {
+  @override
+  HomePageState createState() {
+    return new HomePageState();
+  }
+}
+
+class HomePageState extends State<ScannerHome> {
+  List barcodeResults = [];
+  String result = "Hey there !";
+  int scanNumber = 0;
+  String barcode = "";
+  String sname, spmodel, spsupp, spw, spb, sps, spad, sped, spabn, spbid = "";
+
+  barcodeResultsList() {}
+
+  Future _scanQR() async {
+    try {
+      String qrResult = await BarcodeScanner.scan();
+      setState(() {
+        result = qrResult;
+        barcode = qrResult;
+      });
+    } on PlatformException catch (ex) {
+      if (ex.code == BarcodeScanner.CameraAccessDenied) {
+        setState(() {
+          result = "Camera permission was denied";
+        });
+      } else {
+        setState(() {
+          result = "Unknown Error $ex";
+        });
+      }
+    } on FormatException {
+      setState(() {
+        result = "You pressed the back button before scanning anything";
+      });
+    } catch (ex) {
+      setState(() {
+        result = "Unknown Error $ex";
+      });
+    }
+  }
+
+  Future<List> getInfo() async {
+    final response = await http
+        .post('http://172.16.9.23/pndrMob/cafunct/scanner.php', body: {
+      "barcode": barcode,
+    });
+    //print(response.body.toString());
+    var barcodeResult = json.decode(response.body);
+    print(sname);
+    print(scanNumber);
+    setState(() {
+      sname = barcodeResult[0]["SolarPanelName"];
+      spmodel = barcodeResult[0]["SolarPanelModel"];
+      spsupp = barcodeResult[0]["SolarPanelSupplier"];
+      spw = barcodeResult[0]["SolarPanelwatts"];
+      spb = barcodeResult[0]["SolarPanelBrand"];
+      sps = barcodeResult[0]["SolarPanelSeries"];
+      spad = barcodeResult[0]["SolarPanelApprovalDate"];
+      sped = barcodeResult[0]["SolarPanelExpiryDate"];
+      spabn = barcodeResult[0]["SolarPanelABN"];
+      spbid = barcodeResult[0]["SolarPanelbarcodeID"];
+      scanNumber++;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text("Scan"),
+      ),
+      body: Container(
+        child: Column(
+          children: <Widget>[
+            Align(
+              alignment: Alignment.center,
+              child: Text(
+                sname ?? "No data",
+                style: TextStyle(fontSize: 20.0),
+              ),
+            ),
+            FlatButton(
+              child: Text("Scan"),
+              onPressed: () {
+                _scanQR();
+              },
+            ),
+            FlatButton(
+              child: Text("Get Info"),
+              onPressed: () {
+                getInfo();
+              },
+            ),
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: DataTable(
+                columns: [
+                  DataColumn(
+                      label: Text('Name',
+                          style: TextStyle(
+                              fontSize: 15, fontWeight: FontWeight.bold))),
+                  DataColumn(
+                      label: Text('Model',
+                          style: TextStyle(
+                              fontSize: 15, fontWeight: FontWeight.bold))),
+                  DataColumn(
+                      label: Text('Supplier',
+                          style: TextStyle(
+                              fontSize: 15, fontWeight: FontWeight.bold))),
+                  DataColumn(
+                      label: Text('Watts',
+                          style: TextStyle(
+                              fontSize: 15, fontWeight: FontWeight.bold))),
+                  DataColumn(
+                      label: Text('Brand',
+                          style: TextStyle(
+                              fontSize: 15, fontWeight: FontWeight.bold))),
+                  DataColumn(
+                      label: Text('Series',
+                          style: TextStyle(
+                              fontSize: 15, fontWeight: FontWeight.bold))),
+                  DataColumn(
+                      label: Text('Approval Date',
+                          style: TextStyle(
+                              fontSize: 15, fontWeight: FontWeight.bold))),
+                  DataColumn(
+                      label: Text('Expiry Date',
+                          style: TextStyle(
+                              fontSize: 15, fontWeight: FontWeight.bold))),
+                  DataColumn(
+                      label: Text('ABN',
+                          style: TextStyle(
+                              fontSize: 15, fontWeight: FontWeight.bold))),
+                  DataColumn(
+                      label: Text('ID',
+                          style: TextStyle(
+                              fontSize: 15, fontWeight: FontWeight.bold))),
+                ],
+                rows: [
+                  DataRow(cells: [
+                    DataCell(Text(sname ?? "No data")),
+                    DataCell(Text(spmodel ?? "No data")),
+                    DataCell(Text(spsupp ?? "No data")),
+                    DataCell(Text(spw ?? "No data")),
+                    DataCell(Text(spb ?? "No data")),
+                    DataCell(Text(sps ?? "No data")),
+                    DataCell(Text(spad ?? "No data")),
+                    DataCell(Text(sped ?? "No data")),
+                    DataCell(Text(spabn ?? "No data")),
+                    DataCell(Text(spbid ?? "No data")),
+                  ]),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
