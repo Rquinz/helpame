@@ -13,13 +13,10 @@ class ScannerHome extends StatefulWidget {
 }
 
 class HomePageState extends State<ScannerHome> {
-  List barcodeResults = [];
-  String result = "Hey there !";
+  List<dynamic> barcodeRows = [];
+  String result = "";
   int scanNumber = 0;
   String barcode = "";
-  String sname, spmodel, spsupp, spw, spb, sps, spad, sped, spabn, spbid = "";
-
-  barcodeResultsList() {}
 
   Future _scanQR() async {
     try {
@@ -56,20 +53,9 @@ class HomePageState extends State<ScannerHome> {
     });
     //print(response.body.toString());
     var barcodeResult = json.decode(response.body);
-    print(sname);
-    print(scanNumber);
+
     setState(() {
-      sname = barcodeResult[0]["SolarPanelName"];
-      spmodel = barcodeResult[0]["SolarPanelModel"];
-      spsupp = barcodeResult[0]["SolarPanelSupplier"];
-      spw = barcodeResult[0]["SolarPanelwatts"];
-      spb = barcodeResult[0]["SolarPanelBrand"];
-      sps = barcodeResult[0]["SolarPanelSeries"];
-      spad = barcodeResult[0]["SolarPanelApprovalDate"];
-      sped = barcodeResult[0]["SolarPanelExpiryDate"];
-      spabn = barcodeResult[0]["SolarPanelABN"];
-      spbid = barcodeResult[0]["SolarPanelbarcodeID"];
-      scanNumber++;
+      barcodeResult.insertAll(0, barcodeRows);
     });
   }
 
@@ -85,7 +71,7 @@ class HomePageState extends State<ScannerHome> {
             Align(
               alignment: Alignment.center,
               child: Text(
-                sname ?? "No data",
+                "No data",
                 style: TextStyle(fontSize: 20.0),
               ),
             ),
@@ -99,6 +85,7 @@ class HomePageState extends State<ScannerHome> {
               child: Text("Get Info"),
               onPressed: () {
                 getInfo();
+                print(barcodeRows);
               },
             ),
             SingleChildScrollView(
@@ -146,20 +133,7 @@ class HomePageState extends State<ScannerHome> {
                           style: TextStyle(
                               fontSize: 15, fontWeight: FontWeight.bold))),
                 ],
-                rows: [
-                  DataRow(cells: [
-                    DataCell(Text(sname ?? "No data")),
-                    DataCell(Text(spmodel ?? "No data")),
-                    DataCell(Text(spsupp ?? "No data")),
-                    DataCell(Text(spw ?? "No data")),
-                    DataCell(Text(spb ?? "No data")),
-                    DataCell(Text(sps ?? "No data")),
-                    DataCell(Text(spad ?? "No data")),
-                    DataCell(Text(sped ?? "No data")),
-                    DataCell(Text(spabn ?? "No data")),
-                    DataCell(Text(spbid ?? "No data")),
-                  ]),
-                ],
+                rows: [],
               ),
             ),
           ],
