@@ -55,7 +55,7 @@ class HomePageState extends State<ScannerHome> {
     var barcodeResult = json.decode(response.body);
 
     setState(() {
-      barcodeResult.insertAll(0, barcodeRows);
+      barcodeRows = barcodeResult;
     });
   }
 
